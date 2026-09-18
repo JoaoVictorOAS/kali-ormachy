@@ -171,7 +171,8 @@ launch_install_in_terminal() {
             if [ -n "$term" ] && command -v "$term" >/dev/null 2>&1; then
                 "$term" -e sh -c "$cmd; exec \$SHELL" &
             else
-                sh -c "$cmd" &
+                echo "Erro: Nenhum emulador de terminal encontrado para executar '$cmd'." >&2
+                return 1
             fi
             ;;
     esac
