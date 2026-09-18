@@ -43,3 +43,12 @@ presets = [
 params = [
   { key = "greeting", prompt = "Saudação:", default = "hello" }
 ]
+
+[[categories.tools]]
+name = "Mock-Hyphen-Tool"
+binary = "definitely_missing_hyphen_tool"
+package = "mock-hyphen-pkg"
+mode = "terminal"
+description = "Mock Tool with Hyphen in Name"
+presets = []
+params = []

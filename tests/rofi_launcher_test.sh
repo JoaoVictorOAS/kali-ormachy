@@ -104,55 +104,55 @@ test_missing_binary() {
     assert_contains "$out" "does not exist or is not executable"
 }
 
-# --- Test 5: Missing Tool Flow - Option "Instalar agora" ---
+# --- Test 5: Missing Tool Flow - Option "Instalar agora" (Hermetic) ---
 test_missing_tool_install_option() {
     local out
     out=$(
-        MOCK_ROFI_CAT=$'󰛐 Reconhecimento & OSINT\trecon' \
-        MOCK_ROFI_TOOL=$'✗ Nmap - Scanner de portas\tNmap' \
-        MOCK_ROFI_MISSING_CHOICE="Instalar agora (sudo pacman -S nmap)" \
-        "$LAUNCHER" --dry-run
+        MOCK_ROFI_CAT=$'󰙨 Categoria de Teste\ttesting' \
+        MOCK_ROFI_TOOL=$'✗ MockMissing - Mock Missing Tool\tMockMissing' \
+        MOCK_ROFI_MISSING_CHOICE="Instalar agora (sudo pacman -S mock-missing-pkg)" \
+        "$LAUNCHER" --config "$TEST_CONFIG" --dry-run
     )
-    assert_contains "$out" "[DRY-RUN] Executar instalação: sudo pacman -S nmap"
+    assert_contains "$out" "[DRY-RUN] Executar instalação: sudo pacman -S mock-missing-pkg"
 }
 
-# --- Test 6: Missing Tool Flow - Option "Copiar comando" ---
+# --- Test 6: Missing Tool Flow - Option "Copiar comando" (Hermetic) ---
 test_missing_tool_copy_option() {
     local out
     out=$(
-        MOCK_ROFI_CAT=$'󰛐 Reconhecimento & OSINT\trecon' \
-        MOCK_ROFI_TOOL=$'✗ Nmap - Scanner de portas\tNmap' \
+        MOCK_ROFI_CAT=$'󰙨 Categoria de Teste\ttesting' \
+        MOCK_ROFI_TOOL=$'✗ MockMissing - Mock Missing Tool\tMockMissing' \
         MOCK_ROFI_MISSING_CHOICE="Copiar comando de instalação" \
-        "$LAUNCHER" --dry-run
+        "$LAUNCHER" --config "$TEST_CONFIG" --dry-run
     )
-    assert_contains "$out" "[DRY-RUN] Copiado para a área de transferência: sudo pacman -S nmap"
+    assert_contains "$out" "[DRY-RUN] Copiado para a área de transferência: sudo pacman -S mock-missing-pkg"
 }
 
-# --- Test 7: Missing Tool Flow - Option "Cancelar" ---
+# --- Test 7: Missing Tool Flow - Option "Cancelar" (Hermetic) ---
 test_missing_tool_cancel_option() {
     local out
     local rc=0
     out=$(
-        MOCK_ROFI_CAT=$'󰛐 Reconhecimento & OSINT\trecon' \
-        MOCK_ROFI_TOOL=$'✗ Nmap - Scanner de portas\tNmap' \
+        MOCK_ROFI_CAT=$'󰙨 Categoria de Teste\ttesting' \
+        MOCK_ROFI_TOOL=$'✗ MockMissing - Mock Missing Tool\tMockMissing' \
         MOCK_ROFI_MISSING_CHOICE="Cancelar" \
-        "$LAUNCHER" --dry-run
+        "$LAUNCHER" --config "$TEST_CONFIG" --dry-run
     ) || rc=$?
     [ $rc -eq 0 ] || return 1
     [ -z "$out" ] || return 1
 }
 
-# --- Test 8: Installed CLI Tool Full Interactive Flow ---
+# --- Test 8: Installed CLI Tool Full Interactive Flow (Hermetic) ---
 test_installed_cli_tool_interactive() {
     local out
     out=$(
-        MOCK_ROFI_CAT=$'󰘔 Engenharia Reversa\treverse' \
-        MOCK_ROFI_TOOL=$'✓ GDB - GNU Debugger\tGDB' \
-        MOCK_ROFI_PRESET=$'Depurar Binário\t0' \
-        MOCK_ROFI_PARAM="/usr/bin/python3" \
-        "$LAUNCHER" --dry-run
+        MOCK_ROFI_CAT=$'󰙨 Categoria de Teste\ttesting' \
+        MOCK_ROFI_TOOL=$'✓ MockCLI - Mock CLI Tool\tMockCLI' \
+        MOCK_ROFI_PRESET=$'Preset One\t0' \
+        MOCK_ROFI_PARAM="test_hermetic_value" \
+        "$LAUNCHER" --config "$TEST_CONFIG" --dry-run
     )
-    assert_contains "$out" "gdb -q /usr/bin/python3"
+    assert_contains "$out" "sh -c 'echo test_hermetic_value'"
 }
 
 # --- Test 9: Installed GUI Tool Immediate Dispatch ---
@@ -262,6 +262,45 @@ test_cli_tool_second_preset() {
     assert_contains "$out" "sh -c 'echo goodbye'"
 }
 
+# --- Test 19: Hyphenated Tool Name Extraction (Aircrack-ng with tab) ---
+test_hyphenated_tool_aircrack_tab() {
+    local out
+    out=$(
+        MOCK_ROFI_CAT=$'󰛳 Redes & Wi-Fi\tnetwork' \
+        MOCK_ROFI_TOOL=$'✗ Aircrack-ng - Suite de auditoria de redes 802.11\tAircrack-ng' \
+        MOCK_ROFI_MISSING_CHOICE="Instalar agora (sudo pacman -S aircrack-ng)" \
+        "$LAUNCHER" --dry-run
+    )
+    assert_contains "$out" "[DRY-RUN] Executar instalação: sudo pacman -S aircrack-ng"
+    assert_not_contains "$out" "sudo pacman -S Aircrack "
+}
+
+# --- Test 20: Hyphenated Tool Name Extraction (Aircrack-ng fallback without tab) ---
+test_hyphenated_tool_aircrack_no_tab() {
+    local out
+    out=$(
+        MOCK_ROFI_CAT=$'󰛳 Redes & Wi-Fi\tnetwork' \
+        MOCK_ROFI_TOOL=$'✗ Aircrack-ng - Suite de auditoria de redes 802.11' \
+        MOCK_ROFI_MISSING_CHOICE="Instalar agora (sudo pacman -S aircrack-ng)" \
+        "$LAUNCHER" --dry-run
+    )
+    assert_contains "$out" "[DRY-RUN] Executar instalação: sudo pacman -S aircrack-ng"
+    assert_not_contains "$out" "sudo pacman -S Aircrack "
+}
+
+# --- Test 21: Hyphenated Tool Name Extraction (Hermetic Mock-Hyphen-Tool) ---
+test_hyphenated_tool_hermetic() {
+    local out
+    out=$(
+        MOCK_ROFI_CAT=$'󰙨 Categoria de Teste\ttesting' \
+        MOCK_ROFI_TOOL=$'✗ Mock-Hyphen-Tool - Mock Tool with Hyphen in Name\tMock-Hyphen-Tool' \
+        MOCK_ROFI_MISSING_CHOICE="Instalar agora (sudo pacman -S mock-hyphen-pkg)" \
+        "$LAUNCHER" --config "$TEST_CONFIG" --dry-run
+    )
+    assert_contains "$out" "[DRY-RUN] Executar instalação: sudo pacman -S mock-hyphen-pkg"
+    assert_not_contains "$out" "sudo pacman -S Mock "
+}
+
 echo "======================================================="
 echo "Kali-Ormachy Task 6: Rofi Dynamic Flow & Theming Tests"
 echo "======================================================="
@@ -284,6 +323,9 @@ run_test "test_cancel_at_param" test_cancel_at_param
 run_test "test_cli_tool_default_param_fallback" test_cli_tool_default_param_fallback
 run_test "test_cli_tool_param_override" test_cli_tool_param_override
 run_test "test_cli_tool_second_preset" test_cli_tool_second_preset
+run_test "test_hyphenated_tool_aircrack_tab" test_hyphenated_tool_aircrack_tab
+run_test "test_hyphenated_tool_aircrack_no_tab" test_hyphenated_tool_aircrack_no_tab
+run_test "test_hyphenated_tool_hermetic" test_hyphenated_tool_hermetic
 
 echo "======================================================="
 echo "Results: $PASSED passed; $FAILED failed"

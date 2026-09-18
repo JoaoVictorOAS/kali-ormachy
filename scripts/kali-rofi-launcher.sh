@@ -101,7 +101,7 @@ get_tool_mode() {
     if [ -n "$cat" ]; then
         mode=$("$KALI_ORMACHY_BIN" "${CONFIG_ARGS[@]}" tools --category "$cat" --format json 2>/dev/null | awk -v target="$tool" '
             BEGIN { in_target = 0 }
-            $0 ~ "\"name\": \"" target "\"" { in_target = 1 }
+            index($0, "\"name\": \"" target "\"") > 0 { in_target = 1 }
             in_target && /"mode":/ {
                 sub(/.*"mode": "/, "");
                 sub(/".*/, "");
@@ -114,7 +114,7 @@ get_tool_mode() {
     if [ -z "$mode" ]; then
         mode=$("$KALI_ORMACHY_BIN" "${CONFIG_ARGS[@]}" --format json categories 2>/dev/null | awk -v target="$tool" '
             BEGIN { in_target = 0 }
-            $0 ~ "\"name\": \"" target "\"" { in_target = 1 }
+            index($0, "\"name\": \"" target "\"") > 0 { in_target = 1 }
             in_target && /"mode":/ {
                 sub(/.*"mode": "/, "");
                 sub(/".*/, "");
@@ -140,18 +140,21 @@ launch_install_in_terminal() {
         done
     fi
 
-    case "$term" in
+    local term_bin
+    term_bin=$(basename "${term:-sh}")
+
+    case "$term_bin" in
         kitty)
-            kitty --hold sh -c "$cmd; exec \$SHELL" &
+            "$term" --hold sh -c "$cmd; exec \$SHELL" &
             ;;
         foot)
-            foot --hold sh -c "$cmd; exec \$SHELL" &
+            "$term" --hold sh -c "$cmd; exec \$SHELL" &
             ;;
         alacritty)
-            alacritty --hold -e sh -c "$cmd; exec \$SHELL" &
+            "$term" --hold -e sh -c "$cmd; exec \$SHELL" &
             ;;
         xterm)
-            xterm -hold -e sh -c "$cmd; exec \$SHELL" &
+            "$term" -hold -e sh -c "$cmd; exec \$SHELL" &
             ;;
         *)
             if [ -n "$term" ] && command -v "$term" >/dev/null 2>&1; then
@@ -313,7 +316,15 @@ if [ -z "$tool_name" ]; then
         exit 0
     fi
 
-    tool_name=$(printf "%s\n" "$tool_selection" | awk -F'\t' '{print ($2 != "" ? $2 : $1)}' | sed -E 's/^[✓✗]\s*//; s/\s*-.*$//' | tr -d '\r' | xargs)
+    tool_name=$(printf "%s\n" "$tool_selection" | awk -F'\t' '{
+        if ($2 != "") {
+            print $2
+        } else {
+            sub(/^(\xe2\x9c\x93|\xe2\x9c\x97|✓|✗)[ \t]*/, "", $1);
+            sub(/[ \t]+-.*$/, "", $1);
+            print $1
+        }
+    }' | tr -d '\r' | xargs)
 fi
 
 # --- Step 3: Tool Presence Verification ---
