@@ -10,7 +10,7 @@ pub fn load_default_config() -> Result<Config, Box<dyn std::error::Error>> {
 }
 
 /// Helper to expand `~` in path strings.
-fn expand_tilde(path_str: &str) -> PathBuf {
+pub fn expand_tilde(path_str: &str) -> PathBuf {
     if let Some(stripped) = path_str.strip_prefix("~/") {
         if let Ok(home) = std::env::var("HOME") {
             return PathBuf::from(home).join(stripped);
