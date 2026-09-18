@@ -1,0 +1,78 @@
+/**
+ * Kali-Ormachy - Rofi Theme
+ *
+ * Herança dinâmica de estilos e paleta de cores do Omarchy / Rofi.
+ * Zero cores hardcoded: todas as cores e variáveis provêm do tema ativo.
+ */
+
+@import "~/.config/rofi/config.rasi"
+
+configuration {
+    show-icons:      true;
+    display-dmenu:   "󰘳 Kali";
+}
+
+window {
+    width:            680px;
+    border:           2px;
+    border-radius:    12px;
+    padding:          16px;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    spacing:          12px;
+    children:         [ inputbar, message, listview ];
+}
+
+inputbar {
+    spacing:          8px;
+    padding:          10px 14px;
+    border-radius:    8px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    font:             "JetBrainsMono Nerd Font Bold 12";
+}
+
+entry {
+    font:             "JetBrainsMono Nerd Font 11";
+    placeholder:      "Buscar categoria, ferramenta ou preset...";
+}
+
+listview {
+    lines:            10;
+    columns:          1;
+    spacing:          6px;
+    cycle:            true;
+    dynamic:          true;
+    scrollbar:        false;
+}
+
+element {
+    padding:          8px 12px;
+    border-radius:    6px;
+    spacing:          10px;
+    orientation:      horizontal;
+}
+
+element-text {
+    font:             "JetBrainsMono Nerd Font 11";
+    vertical-align:   0.5;
+}
+
+element-icon {
+    size:             24px;
+    vertical-align:   0.5;
+}
+
+message {
+    padding:          8px 12px;
+    border-radius:    6px;
+}
+
+textbox {
+    font:             "JetBrainsMono Nerd Font 11";
+}

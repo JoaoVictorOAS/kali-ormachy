@@ -1,0 +1,45 @@
+[general]
+terminal = "kitty"
+hold_session = true
+notify_on_missing = true
+
+[[categories]]
+id = "testing"
+name = "Categoria de Teste"
+icon = "󰙨"
+
+[[categories.tools]]
+name = "MockGUI"
+binary = "sh"
+package = "mockgui-pkg"
+mode = "gui"
+description = "Mock GUI Tool for testing"
+presets = []
+params = []
+
+[[categories.tools]]
+name = "MockMissing"
+binary = "definitely_nonexistent_binary_12345"
+package = "mock-missing-pkg"
+mode = "terminal"
+description = "Mock Missing Tool"
+presets = [
+  { name = "Test Preset", cmd = "definitely_nonexistent_binary_12345 --run {target}" }
+]
+params = [
+  { key = "target", prompt = "Target:", default = "default_target" }
+]
+
+[[categories.tools]]
+name = "MockCLI"
+binary = "sh"
+package = "sh-pkg"
+mode = "terminal"
+description = "Mock CLI Tool"
+presets = [
+  { name = "Preset One", cmd = "sh -c 'echo {greeting}'" },
+  { name = "Preset Two", cmd = "sh -c 'echo goodbye'" }
+]
+params = [
+  { key = "greeting", prompt = "Saudação:", default = "hello" }
+]
