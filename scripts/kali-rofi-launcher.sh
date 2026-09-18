@@ -22,6 +22,7 @@ find_binary() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     local candidates=(
+        "$script_dir/kali-ormachy"
         "$script_dir/../target/release/kali-ormachy"
         "$script_dir/../target/debug/kali-ormachy"
         "$HOME/.local/bin/kali-ormachy"

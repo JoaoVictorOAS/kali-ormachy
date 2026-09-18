@@ -353,7 +353,8 @@ setup_hyprland() {
         return 0
     fi
 
-    local bind_line="bind = \$mainMod, K, exec, kali-ormachy-rofi"
+    local bind_bin="$BIN_DIR/kali-ormachy-rofi"
+    local bind_line="bind = \$mainMod, K, exec, $bind_bin"
 
     if [ ! -f "$HYPR_CONF" ]; then
         log_info "Arquivo hyprland.conf não encontrado em: $HYPR_CONF"

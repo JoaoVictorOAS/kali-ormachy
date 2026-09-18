@@ -134,7 +134,7 @@ test_sandbox_install() {
     [ -f "$test_config/kali-ormachy.rasi" ] || return 1
 
     # Check hyprland keybind addition
-    grep -q "bind = \$mainMod, K, exec, kali-ormachy-rofi" "$test_hypr" || return 1
+    grep -E -q "bind = \\\$mainMod, K, exec, .*kali-ormachy-rofi" "$test_hypr" || return 1
 }
 
 # --- Test 6: Reinstall Idempotency (Preserve User Config and Single Keybind) ---
