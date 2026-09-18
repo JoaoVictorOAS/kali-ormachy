@@ -50,19 +50,30 @@ resolve_theme() {
         return 0
     fi
 
+    local xdg_config="${XDG_CONFIG_HOME:-$HOME/.config}"
+    local installed_theme="$xdg_config/ormachy-kali/kali-ormachy.rasi"
+
     local script_dir
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local default_theme="$script_dir/../themes/kali-ormachy.rasi"
+    local dev_theme="$script_dir/../themes/kali-ormachy.rasi"
 
-    if [ -f "$default_theme" ]; then
-        # Ensure ~/.config/rofi/config.rasi exists so @import does not fail
-        if [ ! -f "$HOME/.config/rofi/config.rasi" ]; then
-            mkdir -p "$HOME/.config/rofi" 2>/dev/null || true
-            touch "$HOME/.config/rofi/config.rasi" 2>/dev/null || true
+    local candidates=(
+        "$installed_theme"
+        "$dev_theme"
+        "/usr/share/ormachy-kali/kali-ormachy.rasi"
+    )
+
+    for cand in "${candidates[@]}"; do
+        if [ -f "$cand" ]; then
+            # Ensure ~/.config/rofi/config.rasi exists so @import does not fail
+            if [ ! -f "$HOME/.config/rofi/config.rasi" ]; then
+                mkdir -p "$HOME/.config/rofi" 2>/dev/null || true
+                touch "$HOME/.config/rofi/config.rasi" 2>/dev/null || true
+            fi
+            echo "$cand"
+            return 0
         fi
-        echo "$default_theme"
-        return 0
-    fi
+    done
 
     return 1
 }
