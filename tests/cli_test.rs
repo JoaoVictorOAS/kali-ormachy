@@ -488,3 +488,17 @@ fn test_binary_end_to_end_dry_run() {
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert_eq!(stdout.trim(), "nmap -T4 -F 1.1.1.1");
 }
+
+#[test]
+fn test_install_command_dry_run() {
+    let cli = Cli::try_parse_from(["kali-ormachy", "install", "--package", "nmap", "--dry-run"])
+        .expect("parse failed");
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+    let exit_code = execute(cli, &mut stdout, &mut stderr).expect("execute failed");
+
+    assert_eq!(exit_code, 0);
+    let output = String::from_utf8(stdout).unwrap();
+    assert!(output.contains("-S --needed nmap"));
+}
+

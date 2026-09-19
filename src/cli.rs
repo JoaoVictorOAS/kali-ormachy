@@ -53,6 +53,9 @@ pub enum Commands {
     /// Checks if a tool's binary is installed
     Check(CheckArgs),
 
+    /// Installs a tool or package via pacman in an interactive terminal
+    Install(InstallArgs),
+
     /// Launches a tool with resolved presets and parameters
     LaunchTool(LaunchToolArgs),
 }
@@ -83,6 +86,21 @@ pub struct CheckArgs {
     /// Tool name or binary
     #[arg(short, long)]
     pub tool: String,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct InstallArgs {
+    /// Package name to install
+    #[arg(short, long)]
+    pub package: Option<String>,
+
+    /// Tool name to install
+    #[arg(short, long)]
+    pub tool: Option<String>,
+
+    /// Print the command without spawning the terminal
+    #[arg(long)]
+    pub dry_run: bool,
 }
 
 #[derive(Args, Debug, Clone)]
@@ -280,6 +298,48 @@ pub fn execute<W: Write, E: Write>(
                     }
                 }
             }
+        }
+        Commands::Install(args) => {
+            let pkg = if let Some(ref p) = args.package {
+                p.clone()
+            } else if let Some(ref t) = args.tool {
+                let found = config
+                    .categories
+                    .iter()
+                    .flat_map(|c| &c.tools)
+                    .find(|tool| tool.name.eq_ignore_ascii_case(t) || tool.binary.eq_ignore_ascii_case(t));
+                if let Some(tool) = found {
+                    tool.package.clone()
+                } else {
+                    t.clone()
+                }
+            } else {
+                writeln!(stderr, "Error: either --package or --tool must be specified")?;
+                return Ok(1);
+            };
+
+            let install_cmd = if is_binary_installed("yay") {
+                format!("yay -S --needed {pkg}")
+            } else if is_binary_installed("paru") {
+                format!("paru -S --needed {pkg}")
+            } else {
+                format!("sudo pacman -S --needed {pkg}")
+            };
+
+            if args.dry_run {
+                writeln!(stdout, "{install_cmd}")?;
+                return Ok(0);
+            }
+
+            let terminal = resolve_terminal(&config.general.terminal);
+            let term_cmd = build_terminal_command(&terminal, &install_cmd, true);
+            Command::new(&term_cmd[0])
+                .args(&term_cmd[1..])
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()?;
+            Ok(0)
         }
         Commands::LaunchTool(args) => {
             let tool = config

@@ -96,10 +96,16 @@ run_rofi() {
     elif command -v wofi >/dev/null 2>&1; then
         wofi --dmenu -p "$prompt" "$@"
         return $?
+    elif command -v omarchy-menu-select >/dev/null 2>&1; then
+        omarchy-menu-select "$prompt"
+        return $?
+    elif command -v fzf >/dev/null 2>&1; then
+        fzf --prompt="$prompt > "
+        return $?
     else
-        echo "Error: neither 'rofi' nor 'wofi' was found in PATH (and ROFI_CMD is not set)." >&2
+        echo "Error: neither 'rofi', 'wofi', 'omarchy-menu-select' nor 'fzf' was found in PATH (and ROFI_CMD is not set)." >&2
         if command -v notify-send >/dev/null 2>&1; then
-            notify-send -u critical "kali-ormachy" "Rofi não encontrado no sistema."
+            notify-send -u critical "kali-ormachy" "Nenhum menu (rofi/wofi/omarchy-menu/fzf) encontrado no sistema."
         fi
         return 127
     fi
@@ -463,8 +469,17 @@ if [ -n "$params_list" ]; then
             fi
 
             set +e
-            p_val=$(printf "%s" "$p_default" | run_rofi "$p_label" "${filter_opts[@]}")
-            rc=$?
+            if [ -z "${ROFI_CMD:-}" ] && ! command -v rofi >/dev/null 2>&1 && ! command -v wofi >/dev/null 2>&1 && command -v omarchy-menu-input >/dev/null 2>&1; then
+                p_val=$(omarchy-menu-input "$p_label")
+                rc=$?
+            elif [ -z "${ROFI_CMD:-}" ] && ! command -v rofi >/dev/null 2>&1 && ! command -v wofi >/dev/null 2>&1 && [ -t 0 ]; then
+                read -r -p "$p_label [$p_default]: " p_val || rc=1
+                p_val="${p_val:-$p_default}"
+                rc=0
+            else
+                p_val=$(printf "%s" "$p_default" | run_rofi "$p_label" "${filter_opts[@]}")
+                rc=$?
+            fi
             set -e
 
             if [ $rc -eq 127 ]; then

@@ -159,6 +159,7 @@ while [ $# -gt 0 ]; do
 done
 
 BIN_DIR="${PREFIX}/bin"
+OMARCHY_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy"
 
 # Locate cargo toolchain
 find_cargo() {
@@ -195,6 +196,26 @@ if [ "$UNINSTALL" = true ]; then
         else
             rm -f "$CONFIG_DIR/kali-ormachy.rasi"
             log_success "Removido: $CONFIG_DIR/kali-ormachy.rasi"
+        fi
+    fi
+
+    # Remove quickshell components
+    if [ -d "$CONFIG_DIR/quickshell" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            log_dry "Remover diretório quickshell: $CONFIG_DIR/quickshell"
+        else
+            rm -rf "$CONFIG_DIR/quickshell"
+            log_success "Removido: $CONFIG_DIR/quickshell"
+        fi
+    fi
+
+    # Remove Omarchy plugin
+    if [ -d "$OMARCHY_DIR/plugins/kali-ormachy" ]; then
+        if [ "$DRY_RUN" = true ]; then
+            log_dry "Remover plugin Omarchy: $OMARCHY_DIR/plugins/kali-ormachy"
+        else
+            rm -rf "$OMARCHY_DIR/plugins/kali-ormachy"
+            log_success "Removido plugin Omarchy: $OMARCHY_DIR/plugins/kali-ormachy"
         fi
     fi
 
@@ -322,6 +343,10 @@ install_files() {
             log_dry "Preservar arquivo existente: $CONFIG_DIR/config.toml"
         fi
         log_dry "Copiar $SCRIPT_DIR/themes/kali-ormachy.rasi -> $CONFIG_DIR/kali-ormachy.rasi (modo 644)"
+        log_dry "Copiar arquivos QML para: $CONFIG_DIR/quickshell/"
+        if [ -d "$OMARCHY_DIR" ] && [ -d "$SCRIPT_DIR/plugin" ]; then
+            log_dry "Instalar plugin Omarchy em: $OMARCHY_DIR/plugins/kali-ormachy/"
+        fi
         return 0
     fi
 
@@ -342,6 +367,20 @@ install_files() {
 
     install -m 644 "$SCRIPT_DIR/themes/kali-ormachy.rasi" "$CONFIG_DIR/kali-ormachy.rasi"
     log_success "Tema Rofi instalado em: $CONFIG_DIR/kali-ormachy.rasi"
+
+    mkdir -p "$CONFIG_DIR/quickshell"
+    install -m 644 "$SCRIPT_DIR/quickshell"/*.qml "$CONFIG_DIR/quickshell/"
+    log_success "Componentes Quickshell instalados em: $CONFIG_DIR/quickshell"
+
+    if [ -d "$OMARCHY_DIR" ] && [ -d "$SCRIPT_DIR/plugin" ]; then
+        mkdir -p "$OMARCHY_DIR/plugins/kali-ormachy"
+        install -m 644 "$SCRIPT_DIR/plugin/manifest.json" "$OMARCHY_DIR/plugins/kali-ormachy/manifest.json"
+        install -m 644 "$SCRIPT_DIR/plugin/BarWidget.qml" "$OMARCHY_DIR/plugins/kali-ormachy/BarWidget.qml"
+        log_success "Plugin Omarchy instalado em: $OMARCHY_DIR/plugins/kali-ormachy"
+        if command -v omarchy >/dev/null 2>&1; then
+            omarchy plugin enable kali-ormachy 2>/dev/null || true
+        fi
+    fi
 }
 
 install_files

@@ -53,25 +53,27 @@ Rectangle {
 
         Text {
             id: iconText
-            text: root.icon
-            font.family: "JetBrainsMono Nerd Font, JetBrains Mono, monospace"
+            text: root.icon || "󰘳"
+            font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 18
             color: root.active ? root.accentColor : (mouseArea.containsMouse ? root.textColor : root.mutedTextColor)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            Layout.preferredWidth: 24
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: 26
         }
 
         Text {
             id: nameText
             text: root.categoryName
-            font.family: "JetBrainsMono Nerd Font, JetBrains Mono, sans-serif"
+            font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 13
             font.weight: root.active ? Font.DemiBold : Font.Normal
             color: root.active ? root.activeTextColor : root.textColor
             Layout.fillWidth: true
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
+            Layout.alignment: Qt.AlignVCenter
         }
 
         Rectangle {
@@ -81,12 +83,13 @@ Rectangle {
             implicitHeight: 20
             radius: 10
             color: root.active ? root.accentColor : "#45475a"
+            Layout.alignment: Qt.AlignVCenter
 
             Text {
                 id: countLabel
                 anchors.centerIn: parent
                 text: root.toolCount.toString()
-                font.family: "JetBrainsMono Nerd Font, JetBrains Mono, monospace"
+                font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 11
                 font.weight: Font.Bold
                 color: root.active ? "#11111b" : root.textColor

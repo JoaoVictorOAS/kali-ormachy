@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "kali-ormachy",
+  "name": "Kali Ormachy",
+  "version": "0.1.0",
+  "author": "JoaoVictorOAS",
+  "license": "GPL-3.0",
+  "description": "Launcher categorizado de ferramentas de segurança Kali/BlackArch integrado ao Omarchy",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Kali Ormachy",
+    "description": "Abre o launcher interativo de ferramentas de pentest e segurança",
+    "category": "Tools",
+    "allowMultiple": false,
+    "defaultSection": "center"
+  }
+}

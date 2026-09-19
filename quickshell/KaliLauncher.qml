@@ -24,7 +24,18 @@ PanelWindow {
     visible: true
 
     // Binary configuration
-    property string binPath: "kali-ormachy"
+    property string binPath: {
+        let home = (typeof Quickshell !== "undefined" && Quickshell.env) ? Quickshell.env("HOME") : "";
+        return home ? (home + "/.local/bin/kali-ormachy") : "kali-ormachy";
+    }
+    property bool standalone: false
+
+    function closeLauncher() {
+        root.visible = false;
+        if (root.standalone) {
+            Qt.quit();
+        }
+    }
 
     // Reactive State
     property var categoriesList: []
@@ -69,8 +80,10 @@ PanelWindow {
         command: [root.binPath, "categories", "--format", "json"]
 
         stdout: StdioCollector {
+            id: categoriesCollector
+            waitForEnd: true
             onStreamFinished: {
-                root.handleCategoriesOutput(this.text);
+                root.handleCategoriesOutput(categoriesCollector.text);
             }
         }
     }
@@ -82,8 +95,10 @@ PanelWindow {
         command: []
 
         stdout: StdioCollector {
+            id: toolsCollector
+            waitForEnd: true
             onStreamFinished: {
-                root.handleToolsOutput(toolsProc.currentCatId, this.text);
+                root.handleToolsOutput(toolsProc.currentCatId, toolsCollector.text);
             }
         }
     }
@@ -200,32 +215,36 @@ PanelWindow {
     }
 
     function launchTool(toolName, presetName) {
-        let args = [root.binPath, "launch-tool", "--name", toolName];
+        let bin = root.binPath || "kali-ormachy";
+        let args = [bin, "launch-tool", "--name", toolName];
         if (presetName && presetName.length > 0) {
             args.push("--preset");
             args.push(presetName);
         }
 
         if (typeof Quickshell !== "undefined" && Quickshell.execDetached) {
-            Quickshell.execDetached(args);
+            Quickshell.execDetached(["bash", "-lc", 'exec "$@"', "bash"].concat(args));
         } else {
             detachedProc.command = args;
             detachedProc.running = true;
         }
-        root.visible = false;
+        root.closeLauncher();
     }
 
     function installTool(packageName, toolName) {
-        let target = packageName || toolName;
-        let installCmd = "sudo pacman -S --needed " + target;
-        let args = ["sh", "-c", installCmd];
+        let target = (packageName || toolName || "").trim();
+        if (!target) return;
+        let bin = root.binPath || "kali-ormachy";
+        let args = [bin, "install", "--package", target];
 
         if (typeof Quickshell !== "undefined" && Quickshell.execDetached) {
-            Quickshell.execDetached(args);
+            Quickshell.execDetached(["notify-send", "-a", "Kali-Ormachy", "-i", "utilities-terminal", "Kali-Ormachy", "Abrindo terminal para instalação de " + target + "..."]);
+            Quickshell.execDetached(["bash", "-lc", 'exec "$@"', "bash"].concat(args));
         } else {
             detachedProc.command = args;
             detachedProc.running = true;
         }
+        root.closeLauncher();
     }
 
     // Dim Backdrop Scrim
@@ -235,7 +254,7 @@ PanelWindow {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: root.visible = false
+            onClicked: root.closeLauncher()
         }
     }
 
@@ -269,7 +288,7 @@ PanelWindow {
 
                 Text {
                     text: "󰘳"
-                    font.family: "JetBrainsMono Nerd Font, monospace"
+                    font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 24
                     color: root.mochaBlue
                 }
@@ -279,7 +298,7 @@ PanelWindow {
 
                     Text {
                         text: "Kali-Ormachy Security Tools"
-                        font.family: "JetBrainsMono Nerd Font, sans-serif"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 16
                         font.weight: Font.Bold
                         color: root.mochaText
@@ -287,7 +306,7 @@ PanelWindow {
 
                     Text {
                         text: "Painel Nativo Quickshell para Omarchy Desktop"
-                        font.family: "JetBrainsMono Nerd Font, sans-serif"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         color: root.mochaSubtext
                     }
@@ -309,7 +328,7 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "󰑐"
-                        font.family: "JetBrainsMono Nerd Font, monospace"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 16
                         color: root.mochaBlue
                     }
@@ -335,7 +354,7 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "󰅖"
-                        font.family: "JetBrainsMono Nerd Font, monospace"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 16
                         color: closeMouse.containsMouse ? root.mochaCrust : root.mochaText
                     }
@@ -345,7 +364,7 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: root.visible = false
+                        onClicked: root.closeLauncher()
                     }
                 }
             }
@@ -367,7 +386,7 @@ PanelWindow {
 
                     Text {
                         text: "󰍉"
-                        font.family: "JetBrainsMono Nerd Font, monospace"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 18
                         color: searchInput.activeFocus ? root.mochaBlue : root.mochaSubtext
                     }
@@ -375,7 +394,7 @@ PanelWindow {
                     TextInput {
                         id: searchInput
                         Layout.fillWidth: true
-                        font.family: "JetBrainsMono Nerd Font, sans-serif"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 13
                         color: root.mochaText
                         selectByMouse: true
@@ -401,7 +420,7 @@ PanelWindow {
                             if (text.length > 0) {
                                 text = "";
                             } else {
-                                root.visible = false;
+                                root.closeLauncher();
                             }
                         }
 
@@ -428,7 +447,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: "󰅖"
-                            font.family: "JetBrainsMono Nerd Font, monospace"
+                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
                             color: root.mochaSubtext
                         }
@@ -562,7 +581,7 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "󰍉"
-                            font.family: "JetBrainsMono Nerd Font, monospace"
+                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 42
                             color: "#585b70"
                         }
@@ -570,7 +589,7 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: root.searchQuery.length > 0 ? ("Nenhuma ferramenta encontrada para \"" + root.searchQuery + "\"") : "Nenhuma ferramenta disponível nesta categoria"
-                            font.family: "JetBrainsMono Nerd Font, sans-serif"
+                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 14
                             font.weight: Font.DemiBold
                             color: root.mochaSubtext
@@ -579,7 +598,7 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Verifique o termo buscado ou selecione outra categoria na barra lateral"
-                            font.family: "JetBrainsMono Nerd Font, sans-serif"
+                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 12
                             color: "#6c7086"
                         }
@@ -594,7 +613,7 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "󰑐"
-                            font.family: "JetBrainsMono Nerd Font, monospace"
+                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 36
                             color: root.mochaBlue
 
@@ -610,7 +629,7 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Carregando ferramentas de segurança..."
-                            font.family: "JetBrainsMono Nerd Font, sans-serif"
+                            font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 13
                             color: root.mochaSubtext
                         }
@@ -624,7 +643,7 @@ PanelWindow {
 
                 Text {
                     text: root.statusText
-                    font.family: "JetBrainsMono Nerd Font, sans-serif"
+                    font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 12
                     color: root.mochaSubtext
                 }
@@ -635,16 +654,11 @@ PanelWindow {
 
                 Text {
                     text: "Esc: Fechar • Enter: 1º Resultado • Clique no card: Executar"
-                    font.family: "JetBrainsMono Nerd Font, sans-serif"
+                    font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 11
                     color: "#6c7086"
                 }
             }
         }
-    }
-
-    // Global Key Handlers
-    Keys.onEscapePressed: {
-        root.visible = false;
     }
 }

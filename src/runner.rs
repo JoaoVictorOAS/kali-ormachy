@@ -18,10 +18,13 @@ pub fn resolve_terminal(configured: &str) -> String {
         return configured_clean.to_string();
     }
 
-    // Check $TERMINAL env variable if set and binary exists
+    // Check $TERMINAL env variable if set and binary exists, excluding generic wrapper xdg-terminal-exec
     if let Ok(env_term) = std::env::var("TERMINAL") {
         let env_term_clean = env_term.trim();
-        if !env_term_clean.is_empty() && is_binary_installed(env_term_clean) {
+        if !env_term_clean.is_empty()
+            && env_term_clean != "xdg-terminal-exec"
+            && is_binary_installed(env_term_clean)
+        {
             return env_term_clean.to_string();
         }
     }
@@ -31,6 +34,11 @@ pub fn resolve_terminal(configured: &str) -> String {
         if is_binary_installed(candidate) {
             return candidate.to_string();
         }
+    }
+
+    // Fallback if xdg-terminal-exec is installed
+    if is_binary_installed("xdg-terminal-exec") {
+        return "xdg-terminal-exec".to_string();
     }
 
     // If $TERMINAL was specified in env, use it even if not verified in PATH

@@ -10,7 +10,7 @@ Rectangle {
     // Convenient accessors with safe defaults
     property string name: toolData ? (toolData.name || "") : ""
     property string binary: toolData ? (toolData.binary || "") : ""
-    property string package: toolData ? (toolData.package || "") : ""
+    property string packageName: toolData ? (toolData.package || "") : ""
     property string mode: toolData ? (toolData.mode || "terminal") : "terminal"
     property string description: toolData ? (toolData.description || "") : ""
     property bool installed: toolData ? (toolData.installed === true) : false
@@ -74,7 +74,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: root.mode === "gui" ? "󰍹" : "󰞷"
-                    font.family: "JetBrainsMono Nerd Font, monospace"
+                    font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 14
                     color: root.mode === "gui" ? root.accentMauve : root.accentBlue
                 }
@@ -83,7 +83,7 @@ Rectangle {
             // Tool Title
             Text {
                 text: root.name
-                font.family: "JetBrainsMono Nerd Font, sans-serif"
+                font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 15
                 font.weight: Font.Bold
                 color: root.textColor
@@ -102,7 +102,7 @@ Rectangle {
                     id: binLabel
                     anchors.centerIn: parent
                     text: root.binary
-                    font.family: "JetBrainsMono Nerd Font, monospace"
+                    font.family: "JetBrainsMono Nerd Font"
                     font.pixelSize: 11
                     color: root.subtextColor
                 }
@@ -128,7 +128,7 @@ Rectangle {
 
                     Text {
                         text: root.installed ? "󰄬" : "󰅚"
-                        font.family: "JetBrainsMono Nerd Font, monospace"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         font.weight: Font.Bold
                         color: root.installed ? root.successGreen : root.errorRed
@@ -136,7 +136,7 @@ Rectangle {
 
                     Text {
                         text: root.installed ? "Instalado" : "Não instalado"
-                        font.family: "JetBrainsMono Nerd Font, sans-serif"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: root.installed ? root.successGreen : root.errorRed
@@ -150,7 +150,7 @@ Rectangle {
             text: root.description
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            font.family: "JetBrainsMono Nerd Font, sans-serif"
+            font.family: "JetBrainsMono Nerd Font"
             font.pixelSize: 12
             color: root.descTextColor
             opacity: 0.9
@@ -165,7 +165,7 @@ Rectangle {
 
             Text {
                 text: "Presets de Execução:"
-                font.family: "JetBrainsMono Nerd Font, sans-serif"
+                font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: 11
                 font.weight: Font.DemiBold
                 color: "#6c7086"
@@ -194,14 +194,14 @@ Rectangle {
 
                             Text {
                                 text: "󰐊"
-                                font.family: "JetBrainsMono Nerd Font, monospace"
+                                font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 10
                                 color: root.accentBlue
                             }
 
                             Text {
                                 text: modelData.name
-                                font.family: "JetBrainsMono Nerd Font, monospace"
+                                font.family: "JetBrainsMono Nerd Font"
                                 font.pixelSize: 11
                                 color: root.textColor
                             }
@@ -245,14 +245,14 @@ Rectangle {
 
                     Text {
                         text: "▶"
-                        font.family: "JetBrainsMono Nerd Font, monospace"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 11
                         color: "#11111b"
                     }
 
                     Text {
                         text: "Executar"
-                        font.family: "JetBrainsMono Nerd Font, sans-serif"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         font.weight: Font.Bold
                         color: "#11111b"
@@ -283,14 +283,14 @@ Rectangle {
 
                     Text {
                         text: "󰐥"
-                        font.family: "JetBrainsMono Nerd Font, monospace"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         color: "#11111b"
                     }
 
                     Text {
-                        text: "Instalar (" + (root.package || root.binary) + ")"
-                        font.family: "JetBrainsMono Nerd Font, sans-serif"
+                        text: "Instalar (" + (root.packageName || root.binary) + ")"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 12
                         font.weight: Font.Bold
                         color: "#11111b"
@@ -302,7 +302,10 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.installRequested(root.package, root.name)
+                    onClicked: {
+                        let pkg = (root.packageName || root.binary || root.name).trim();
+                        root.installRequested(pkg, root.name);
+                    }
                 }
             }
         }
@@ -319,7 +322,8 @@ Rectangle {
             if (root.installed) {
                 root.launchRequested(root.name, "");
             } else {
-                root.installRequested(root.package, root.name);
+                let pkg = (root.packageName || root.binary || root.name).trim();
+                root.installRequested(pkg, root.name);
             }
         }
     }

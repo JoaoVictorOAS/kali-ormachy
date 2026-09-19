@@ -29,6 +29,13 @@ install: build
 	install -d $(DESTDIR)$(CONFIGDIR)
 	test -f $(DESTDIR)$(CONFIGDIR)/config.toml || install -m 644 config.default.toml $(DESTDIR)$(CONFIGDIR)/config.toml
 	install -m 644 themes/kali-ormachy.rasi $(DESTDIR)$(CONFIGDIR)/kali-ormachy.rasi
+	install -d $(DESTDIR)$(CONFIGDIR)/quickshell
+	install -m 644 quickshell/*.qml $(DESTDIR)$(CONFIGDIR)/quickshell/
+	@if [ -d "$(XDG_CONFIG_HOME)/omarchy" ]; then \
+		install -d $(DESTDIR)$(XDG_CONFIG_HOME)/omarchy/plugins/kali-ormachy; \
+		install -m 644 plugin/manifest.json $(DESTDIR)$(XDG_CONFIG_HOME)/omarchy/plugins/kali-ormachy/manifest.json; \
+		install -m 644 plugin/BarWidget.qml $(DESTDIR)$(XDG_CONFIG_HOME)/omarchy/plugins/kali-ormachy/BarWidget.qml; \
+	fi
 	@echo "Installation completed successfully."
 	@echo "Binaries installed to $(DESTDIR)$(BINDIR)"
 	@echo "Configuration installed to $(DESTDIR)$(CONFIGDIR)"
@@ -37,6 +44,8 @@ uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/kali-ormachy
 	rm -f $(DESTDIR)$(BINDIR)/kali-ormachy-rofi
 	rm -f $(DESTDIR)$(CONFIGDIR)/kali-ormachy.rasi
+	rm -rf $(DESTDIR)$(CONFIGDIR)/quickshell
+	rm -rf $(DESTDIR)$(XDG_CONFIG_HOME)/omarchy/plugins/kali-ormachy
 	@if [ -f "$(DESTDIR)$(CONFIGDIR)/config.toml" ]; then \
 		echo "Note: $(DESTDIR)$(CONFIGDIR)/config.toml was preserved. Remove manually if desired."; \
 	fi
